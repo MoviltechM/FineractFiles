@@ -1,1 +1,10 @@
 https://cwiki.apache.org/confluence/display/FINERACT/Fineract-platform+Installation+on+Windows
+
+ultima version de fineract
+https://github.com/MiguelAlbores/fineract
+
+ultima version de community-app
+https://github.com/MiguelAlbores/community-app
+
+implementacion eclipse
+https://mifosforge.jira.com/wiki/spaces/MDZ/pages/93093939/Eclipse+Setup
