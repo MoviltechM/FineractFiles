@@ -1,0 +1,258 @@
+index 08590dc..9130d17 100644
+--- a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/api/ClientApiConstants.java
++++ b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/api/ClientApiConstants.java
+@@ -89,6 +89,8 @@ public class ClientApiConstants {
+     public static final String middlenameParamName = "middlename";
+     public static final String lastnameParamName = "lastname";
+     public static final String fullnameParamName = "fullname";
++    public static final String curpParamName = "curp";
++    public static final String rfcParamName = "rfc";
+     public static final String displaynameParamName = "displayname";
+     public static final String officeIdParamName = "officeId";
+     public static final String transferOfficeIdParamName = "transferOfficeIdParamName";
+@@ -196,7 +198,7 @@ public class ClientApiConstants {
+     protected static final Set<String> CLIENT_RESPONSE_DATA_PARAMETERS = new HashSet<>(Arrays.asList(idParamName,
+             accountNoParamName,
+             externalIdParamName, statusParamName, activeParamName, activationDateParamName, firstnameParamName, middlenameParamName,
+-            lastnameParamName, fullnameParamName, displayNameParamName, mobileNoParamName, emailAddressParamName, officeIdParamName, officeNameParamName,
++            lastnameParamName, fullnameParamName,curpParamName,rfcParamName, displayNameParamName, mobileNoParamName, emailAddressParamName, officeIdParamName, officeNameParamName,
+             transferToOfficeIdParamName, transferToOfficeNameParamName, hierarchyParamName, imageIdParamName, imagePresentParamName,
+             staffIdParamName, staffNameParamName, timelineParamName, groupsParamName, officeOptionsParamName, staffOptionsParamName,
+             dateOfBirthParamName, genderParamName, clientTypeParamName, clientClassificationParamName, legalFormParamName, 
+diff --git a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/command/ClientIdentifierCommand.java b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/command/ClientIdentifierCommand.java
+index 19f831b..dde46f3 100644
+--- a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/command/ClientIdentifierCommand.java
++++ b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/command/ClientIdentifierCommand.java
+@@ -34,7 +34,7 @@ public class ClientIdentifierCommand {
+     private final Long documentTypeId;
+     private final String documentKey;
+     private final String description;
+-	private final String status;
++    private final String status;
+ 
+     public ClientIdentifierCommand(final Long documentTypeId, final String documentKey, final String statusString, final String description) {
+         this.documentTypeId = documentTypeId;
+diff --git a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientApiCollectionConstants.java b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientApiCollectionConstants.java
+index acf0dc7..a018eac 100644
+--- a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientApiCollectionConstants.java
++++ b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientApiCollectionConstants.java
+@@ -32,7 +32,7 @@ public class ClientApiCollectionConstants extends ClientApiConstants{
+                     mobileNoParamName, emailAddressParamName, firstnameParamName, middlenameParamName, lastnameParamName, fullnameParamName, officeIdParamName,
+                     activeParamName, activationDateParamName, staffIdParamName, submittedOnDateParamName, savingsProductIdParamName,
+                     dateOfBirthParamName, genderIdParamName, clientTypeIdParamName, clientClassificationIdParamName,
+-                    clientNonPersonDetailsParamName, displaynameParamName, legalFormIdParamName, datatables, isStaffParamName));
++                    clientNonPersonDetailsParamName, displaynameParamName, legalFormIdParamName, datatables, isStaffParamName,curpParamName,rfcParamName));
+ 
+     protected static final Set<String> CLIENT_NON_PERSON_CREATE_REQUEST_DATA_PARAMETERS = new HashSet<>(
+             Arrays.asList(familyMembers,address,localeParamName, dateFormatParamName, incorpNumberParamName, remarksParamName, incorpValidityTillParamName,
+@@ -40,9 +40,8 @@ public class ClientApiCollectionConstants extends ClientApiConstants{
+ 
+     protected static final Set<String> CLIENT_UPDATE_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName,
+             dateFormatParamName, accountNoParamName, externalIdParamName, mobileNoParamName, emailAddressParamName, firstnameParamName, middlenameParamName,
+-
+             lastnameParamName, fullnameParamName, activeParamName, activationDateParamName, staffIdParamName, savingsProductIdParamName,
+-            dateOfBirthParamName, genderIdParamName, clientTypeIdParamName, clientClassificationIdParamName, submittedOnDateParamName, clientNonPersonDetailsParamName, displaynameParamName, legalFormIdParamName, isStaffParamName));
++            dateOfBirthParamName, genderIdParamName, clientTypeIdParamName, clientClassificationIdParamName, submittedOnDateParamName, clientNonPersonDetailsParamName, displaynameParamName, legalFormIdParamName, isStaffParamName,curpParamName,rfcParamName));
+ 
+     protected static final Set<String> CLIENT_NON_PERSON_UPDATE_REQUEST_DATA_PARAMETERS = new HashSet<>(Arrays.asList(localeParamName,
+             dateFormatParamName, incorpNumberParamName, remarksParamName, incorpValidityTillParamName,
+diff --git a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientData.java b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientData.java
+index 96f136d..ca53303 100644
+--- a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientData.java
++++ b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientData.java
+@@ -58,9 +58,11 @@ final public class ClientData implements Comparable<ClientData> {
+     private final String middlename;
+     private final String lastname;
+     private final String fullname;
++    private final String curp;
++    private final String rfc;    
+     private final String displayName;
+     private final String mobileNo;
+-	private final String emailAddress;
++    private final String emailAddress;
+     private final LocalDate dateOfBirth;
+     private final CodeValueData gender;
+     private final CodeValueData clientType;
+@@ -153,6 +155,8 @@ final public class ClientData implements Comparable<ClientData> {
+         this.lastname = lastname;
+         this.middlename = middlename;
+         this.fullname = fullname;
++        this.curp = null;
++        this.rfc = null;
+         this.activationDate=activationDate;
+         this.submittedOnDate=submittedOn;
+         this.active=active;
+@@ -238,10 +242,12 @@ final public class ClientData implements Comparable<ClientData> {
+         final String middlename = null;
+         final String lastname = null;
+         final String fullname = null;
++        final String curp = null;
++        final String rfc = null;
+         final String displayName = null;
+         final String externalId = null;
+         final String mobileNo = null;
+-		final String emailAddress = null;
++	final String emailAddress = null;
+         final LocalDate dateOfBirth = null;
+         final CodeValueData gender = null;
+         final Long imageId = null;
+@@ -259,7 +265,7 @@ final public class ClientData implements Comparable<ClientData> {
+ 		final Boolean isStaff = false;
+         final ClientNonPersonData clientNonPersonDetails = null;
+         return new ClientData(accountNo, status, subStatus, officeId, officeName, transferToOfficeId, transferToOfficeName, id, firstname,
+-                middlename, lastname, fullname, displayName, externalId, mobileNo, emailAddress, dateOfBirth, gender, joinedDate, imageId, staffId,
++                middlename, lastname, fullname,curp,rfc, displayName, externalId, mobileNo, emailAddress, dateOfBirth, gender, joinedDate, imageId, staffId,
+                 staffName, officeOptions, groups, staffOptions, narrations, genderOptions, timeline, savingProductOptions,
+                 savingsProductId, savingsProductName, savingsAccountId, savingAccountOptions, clientType, clientClassification,
+                 clientTypeOptions, clientClassificationOptions, clientNonPersonConstitutionOptions, clientNonPersonMainBusinessLineOptions, 
+@@ -271,7 +277,7 @@ final public class ClientData implements Comparable<ClientData> {
+ 
+         return new ClientData(clientData.accountNo, clientData.status, clientData.subStatus, clientData.officeId, clientData.officeName,
+                 clientData.transferToOfficeId, clientData.transferToOfficeName, clientData.id, clientData.firstname, clientData.middlename,
+-                clientData.lastname, clientData.fullname, clientData.displayName, clientData.externalId, clientData.mobileNo, clientData.emailAddress,
++                clientData.lastname, clientData.fullname,clientData.curp,clientData.rfc, clientData.displayName, clientData.externalId, clientData.mobileNo, clientData.emailAddress,
+                 clientData.dateOfBirth, clientData.gender, clientData.activationDate, clientData.imageId, clientData.staffId,
+                 clientData.staffName, templateData.officeOptions, clientData.groups, templateData.staffOptions, templateData.narrations,
+                 templateData.genderOptions, clientData.timeline, templateData.savingProductOptions, clientData.savingsProductId,
+@@ -287,7 +293,7 @@ final public class ClientData implements Comparable<ClientData> {
+ 
+         return new ClientData(clientData.accountNo, clientData.status, clientData.subStatus, clientData.officeId, clientData.officeName,
+                 clientData.transferToOfficeId, clientData.transferToOfficeName, clientData.id, clientData.firstname, clientData.middlename,
+-                clientData.lastname, clientData.fullname, clientData.displayName, clientData.externalId, clientData.mobileNo, clientData.emailAddress,
++                clientData.lastname, clientData.fullname,clientData.curp,clientData.rfc, clientData.displayName, clientData.externalId, clientData.mobileNo, clientData.emailAddress,
+                 clientData.dateOfBirth, clientData.gender, clientData.activationDate, clientData.imageId, clientData.staffId,
+                 clientData.staffName, clientData.officeOptions, clientData.groups, clientData.staffOptions, clientData.narrations,
+                 clientData.genderOptions, clientData.timeline, clientData.savingProductOptions, clientData.savingsProductId,
+@@ -301,7 +307,7 @@ final public class ClientData implements Comparable<ClientData> {
+     public static ClientData setParentGroups(final ClientData clientData, final Collection<GroupGeneralData> parentGroups) {
+         return new ClientData(clientData.accountNo, clientData.status, clientData.subStatus, clientData.officeId, clientData.officeName,
+                 clientData.transferToOfficeId, clientData.transferToOfficeName, clientData.id, clientData.firstname, clientData.middlename,
+-                clientData.lastname, clientData.fullname, clientData.displayName, clientData.externalId, clientData.mobileNo, clientData.emailAddress,
++                clientData.lastname, clientData.fullname,clientData.curp,clientData.rfc, clientData.displayName, clientData.externalId, clientData.mobileNo, clientData.emailAddress,
+                 clientData.dateOfBirth, clientData.gender, clientData.activationDate, clientData.imageId, clientData.staffId,
+                 clientData.staffName, clientData.officeOptions, parentGroups, clientData.staffOptions, null, null, clientData.timeline,
+                 clientData.savingProductOptions, clientData.savingsProductId, clientData.savingsProductName, clientData.savingsAccountId,
+@@ -319,7 +325,7 @@ final public class ClientData implements Comparable<ClientData> {
+         final String transferToOfficeName = null;
+         final String externalId = null;
+         final String mobileNo = null;
+-		final String emailAddress = null;
++        final String emailAddress = null;
+         final LocalDate dateOfBirth = null;
+         final CodeValueData gender = null;
+         final LocalDate activationDate = null;
+@@ -351,7 +357,7 @@ final public class ClientData implements Comparable<ClientData> {
+ 		final Boolean isStaff = false;
+         final ClientNonPersonData clientNonPerson = null;
+         return new ClientData(accountNo, status, subStatus, officeId, officeName, transferToOfficeId, transferToOfficeName, id, firstname,
+-                middlename, lastname, fullname, displayName, externalId, mobileNo, emailAddress, dateOfBirth, gender, activationDate, imageId, staffId,
++                middlename, lastname, fullname,null,null, displayName, externalId, mobileNo, emailAddress, dateOfBirth, gender, activationDate, imageId, staffId,
+                 staffName, allowedOffices, groups, staffOptions, closureReasons, genderOptions, timeline, savingProductOptions,
+                 savingsProductId, savingsProductName, savingsAccountId, savingAccountOptions, clientType, clientClassification,
+                 clientTypeOptions, clientClassificationOptions, clientNonPersonConstitutionOptions, clientNonPersonMainBusinessLineOptions, 
+@@ -400,7 +406,7 @@ final public class ClientData implements Comparable<ClientData> {
+ 		final Boolean isStaff = false;
+         final ClientNonPersonData clientNonPerson = null;
+         return new ClientData(accountNo, status, subStatus, officeId, officeName, transferToOfficeId, transferToOfficeName, id, firstname,
+-                middlename, lastname, fullname, displayName, externalId, mobileNo, emailAddress, dateOfBirth, gender, activationDate, imageId, staffId,
++                middlename, lastname, fullname,null,null, displayName, externalId, mobileNo, emailAddress, dateOfBirth, gender, activationDate, imageId, staffId,
+                 staffName, allowedOffices, groups, staffOptions, closureReasons, genderOptions, timeline, savingProductOptions,
+                 savingsProductId, savingsProductName, savingsAccountId, savingAccountOptions, clientType, clientClassification,
+                 clientTypeOptions, clientClassificationOptions, clientNonPersonConstitutionOptions, clientNonPersonMainBusinessLineOptions, 
+@@ -435,7 +441,7 @@ final public class ClientData implements Comparable<ClientData> {
+         final List<EnumOptionData> clientLegalFormOptions = null;
+         final ClientFamilyMembersData familyMemberOptions=null;
+         return new ClientData(accountNo, status, subStatus, officeId, officeName, transferToOfficeId, transferToOfficeName, id, firstname,
+-                middlename, lastname, fullname, displayName, externalId, mobileNo, emailAddress, dateOfBirth, gender, activationDate, imageId, staffId,
++                middlename, lastname, fullname,null,null, displayName, externalId, mobileNo, emailAddress, dateOfBirth, gender, activationDate, imageId, staffId,
+                 staffName, allowedOffices, groups, staffOptions, closureReasons, genderOptions, timeline, savingProductOptions,
+                 savingsProductId, savingsProductName, savingsAccountId, null, clientType, clientClassification, clientTypeOptions,
+                 clientClassificationOptions, clientNonPersonConstitutionOptions, clientNonPersonMainBusinessLineOptions, clientNonPerson,
+@@ -445,7 +451,7 @@ final public class ClientData implements Comparable<ClientData> {
+ 
+     private ClientData(final String accountNo, final EnumOptionData status, final CodeValueData subStatus, final Long officeId,
+             final String officeName, final Long transferToOfficeId, final String transferToOfficeName, final Long id,
+-            final String firstname, final String middlename, final String lastname, final String fullname, final String displayName,
++            final String firstname, final String middlename, final String lastname, final String fullname,final String curp,final String rfc, final String displayName,
+             final String externalId, final String mobileNo, final String emailAddress, final LocalDate dateOfBirth, final CodeValueData gender,
+             final LocalDate activationDate, final Long imageId, final Long staffId, final String staffName,
+             final Collection<OfficeData> allowedOffices, final Collection<GroupGeneralData> groups,
+@@ -474,11 +480,13 @@ final public class ClientData implements Comparable<ClientData> {
+         this.firstname = StringUtils.defaultIfEmpty(firstname, null);
+         this.middlename = StringUtils.defaultIfEmpty(middlename, null);
+         this.lastname = StringUtils.defaultIfEmpty(lastname, null);
++        this.curp =  StringUtils.defaultIfEmpty(curp, null);
++        this.rfc =  StringUtils.defaultIfEmpty(rfc, null);
+         this.fullname = StringUtils.defaultIfEmpty(fullname, null);
+         this.displayName = StringUtils.defaultIfEmpty(displayName, null);
+         this.externalId = StringUtils.defaultIfEmpty(externalId, null);
+         this.mobileNo = StringUtils.defaultIfEmpty(mobileNo, null);
+-		this.emailAddress = StringUtils.defaultIfEmpty(emailAddress, null);
++	this.emailAddress = StringUtils.defaultIfEmpty(emailAddress, null);
+         this.activationDate = activationDate;
+         this.dateOfBirth = dateOfBirth;
+         this.gender = gender;
+diff --git a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/domain/Client.java b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/domain/Client.java
+index 1b1b393..0a7faf6 100644
+--- a/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/domain/Client.java
++++ b/fineract-provider/src/main/java/org/apache/fineract/portfolio/client/domain/Client.java
+@@ -108,6 +108,12 @@ public final class Client extends AbstractPersistableCustom<Long> {
+ 
+     @Column(name = "fullname", length = 100, nullable = true)
+     private String fullname;
++    
++    @Column(name = "curp", length = 15, nullable = true)
++    private String curp;
++    
++    @Column(name = "rfc", length = 15, nullable = true)
++    private String rfc;
+ 
+     @Column(name = "display_name", length = 100, nullable = false)
+     private String displayName;
+@@ -245,6 +251,8 @@ public final class Client extends AbstractPersistableCustom<Long> {
+         final String middlename = command.stringValueOfParameterNamed(ClientApiConstants.middlenameParamName);
+         final String lastname = command.stringValueOfParameterNamed(ClientApiConstants.lastnameParamName);
+         final String fullname = command.stringValueOfParameterNamed(ClientApiConstants.fullnameParamName);
++        final String curp = command.stringValueOfParameterNamed(ClientApiConstants.curpParamName);
++        final String rfc = command.stringValueOfParameterNamed(ClientApiConstants.rfcParamName);
+ 		
+ 		final boolean isStaff = command.booleanPrimitiveValueOfParameterNamed(ClientApiConstants.isStaffParamName);
+ 
+@@ -272,7 +280,7 @@ public final class Client extends AbstractPersistableCustom<Long> {
+             submittedOnDate = command.localDateValueOfParameterNamed(ClientApiConstants.submittedOnDateParamName);
+         }
+         final Long savingsAccountId = null;
+-        return new Client(currentUser, status, clientOffice, clientParentGroup, accountNo, firstname, middlename, lastname, fullname,
++        return new Client(currentUser, status, clientOffice, clientParentGroup, accountNo, firstname, middlename, lastname, fullname,curp,rfc,
+                 activationDate, officeJoiningDate, externalId, mobileNo, emailAddress, staff, submittedOnDate, savingsProductId, savingsAccountId, dataOfBirth,
+                 gender, clientType, clientClassification, legalForm, isStaff);
+     }
+@@ -282,7 +290,7 @@ public final class Client extends AbstractPersistableCustom<Long> {
+     }
+ 
+     private Client(final AppUser currentUser, final ClientStatus status, final Office office, final Group clientParentGroup,
+-            final String accountNo, final String firstname, final String middlename, final String lastname, final String fullname,
++            final String accountNo, final String firstname, final String middlename, final String lastname, final String fullname,final String curp, final String rfc,
+             final LocalDate activationDate, final LocalDate officeJoiningDate, final String externalId, final String mobileNo, final String emailAddress,
+             final Staff staff, final LocalDate submittedOnDate, final Long savingsProductId, final Long savingsAccountId,
+             final LocalDate dateOfBirth, final CodeValue gender, final CodeValue clientType, final CodeValue clientClassification, final Integer legalForm, final Boolean isStaff) {
+@@ -347,6 +355,19 @@ public final class Client extends AbstractPersistableCustom<Long> {
+         } else {
+             this.fullname = null;
+         }
++        
++        if (StringUtils.isNotBlank(curp)) {
++            this.curp = curp.trim();
++        } else {
++            this.curp = null;
++        }
++        
++        if (StringUtils.isNotBlank(rfc)) {
++            this.rfc = rfc.trim();
++        } else {
++            this.rfc = null;
++        }
++        
+ 
+         if (clientParentGroup != null) {
+             this.groups = new HashSet<>();
