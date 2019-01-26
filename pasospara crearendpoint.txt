@@ -1,0 +1,25 @@
+gradlew -Penv=dev eclipse -- generar configuraciones necesarias para la lectura desde el ide
+
+crear un nuevo archivo en resources con los cambiosa a realizar sql. migrations/core-db/archivo.sql
+
+crear domain class para esta tabla in portfolio/group/domain y crear la nueva clase
+
+crear el repositorio correspondiente a la nueva clase 
+
+crear servicio in group/service
+
+crear la implementacio del servicio
+
+create api contans in group/api
+
+crear validaciones en group/serialization
+
+crear group/data DataClass
+
+crear group/service class groupCycleReadPlatformService
+
+commandWrapperBuilder
+
+crear el commanHandle en group/handler
+
+spring 1.5 ~ 1.6

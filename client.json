@@ -1,0 +1,19 @@
+{
+	"address":[],
+	"familyMembers":[],
+	"officeId":1,
+	"legalFormId":1,
+	"genderId":14,
+	"firstname":"Main",
+	"middlename":"A",
+	"lastname":"Main",
+	"curp":"curp1",
+	"rfc":"rfc1",
+	"mobileNo":"555555555",
+	"locale":"en",
+	"dateFormat":"dd MMMM yyyy",
+	"activationDate":"29 November 2018",
+	"submittedOnDate":"29 November 2018",
+	"dateOfBirth":"13 August 2000",
+	"savingsProductId":null
+}
